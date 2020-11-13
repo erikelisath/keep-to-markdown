@@ -72,9 +72,9 @@ def read_write_notes(path):
             data = json.load(jsonfile)
             timestamp = data['userEditedTimestampUsec']
             if timestamp == 0:
-                iso_datetime = dt.now().strftime('%Y-%m-%d %H:%M:%S:%f edited')
+                iso_datetime = dt.now().strftime('%Y-%m-%d %H:%M:%S edited')
             else:
-                iso_datetime = dt.fromtimestamp(timestamp/1000000).strftime('%Y-%m-%d %H:%M:%S:%f')
+                iso_datetime = dt.fromtimestamp(timestamp/1000000).strftime('%Y-%m-%d %H:%M:%S')
 
             if data['title'] != '':
                 title = str(data['title']).replace('/', '_')
@@ -86,37 +86,41 @@ def read_write_notes(path):
             if not os.path.exists(f'notes/{title}.md'):
                 print(f'Convert: {title}')
                 with open(f'notes/{title}.md', 'w') as mdfile:
+                    mdfile.write(f'---\n')
                     mdfile.write(f'title: {title}\n')
+                    if (title != iso_datetime):
+                        mdfile.write(f'date: {iso_datetime}\n')
+                    mdfile.write(f'---\n\n')
                     # add tags
                     try:
                         tags = read_tags(data['labels'])
                         mdfile.write(f'{tags}\n\n')
                     except KeyError:
-                        print('No tags aviable.')
+                        print('No tags available.')
                     # add text content
                     try:
                         textContent = data['textContent']
                         mdfile.write(f'{textContent}\n\n')
                     except KeyError:
-                        print('No text content aviable.')
+                        print('No text content available.')
                     # add tasklist
                     try:
                         tasklist = read_tasklist(data['listContent'])
                         mdfile.write(f'{tasklist}\n\n')
                     except KeyError:
-                        print('No tasklist aviable.')
+                        print('No tasklist available.')
                     # add annotations
                     try:
                         annotations = read_annotations(data['annotations'])
                         mdfile.write(f'{annotations}')
                     except KeyError:
-                        print('No annotations aviable.')
+                        print('No annotations available.')
                     # add attachments
                     try:
                         attachments = read_attachments(data['attachments'], path)
                         mdfile.write(f'{attachments}')
                     except KeyError:
-                        print('No attachments aviable.')
+                        print('No attachments available.')
             else:
                 print(f'File "{title}" exists!')
 

@@ -90,13 +90,13 @@ def read_write_notes(path):
                     mdfile.write(f'title: {title}\n')
                     if (title != iso_datetime):
                         mdfile.write(f'date: {iso_datetime}\n')
-                    mdfile.write(f'---\n\n')
                     # add tags
                     try:
                         tags = read_tags(data['labels'])
-                        mdfile.write(f'{tags}\n\n')
+                        mdfile.write(f'{tags}\n')
                     except KeyError:
                         print('No tags available.')
+                    mdfile.write(f'---\n\n')
                     # add text content
                     try:
                         textContent = data['textContent']

@@ -24,8 +24,11 @@ With this script Google Keep notes can be converted into markdown files. The Jso
 Example of a converted markdown note:
 
 ```markdown
+---
 title: <Title>
+date: <Date> (optional, if title is set)
 tags: <tag1>;<tag2>;
+---
 
 <textContent>
 Example Text ...
@@ -38,7 +41,7 @@ Example Text ...
 <annotations>
 *Weblinks:* [link1](http//..); [link2](http://..);
 
-<attechments>
+<attachments>
 *Attachments:* ![image](resource/image.jpg)
 
 ```

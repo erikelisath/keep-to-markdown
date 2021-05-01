@@ -28,6 +28,7 @@ def clean_title(title) -> str:
         title = title.replace('\\', '_').replace('/', '_').replace('|', '_')
         title = title.replace('<', '-').replace('>', '-').replace(':', ' ')
         title = title.replace('?', '').replace('"', '').replace('*', '')
+        title = title.replace('\n', '')
     return title
 
 def read_annotations(list) -> str:
@@ -45,10 +46,10 @@ def read_attachments(list, path) -> str:
         if 'image' in entry['mimetype']:
             image = entry['filePath']
             if copy_file(image, path) is False:
-                # Falls die Datei nicht gefunden werden konnte,
-                # wird geprüft ob es die Datei unter einem
-                # anderen Dateiformat zufinden ist.
-                # Google benutzt '.jpeg' statt '.jpg' -- doof
+                # If the file could not be found,
+                # it will be checked if the file can be found
+                # another file format.
+                # Google used '.jpeg' instead of '.jpg'
                 image_type = mimetypes.guess_type(f'{path}{image}')
                 types = mimetypes.guess_all_extensions(image_type[0])
                 for type in types:
@@ -88,14 +89,14 @@ def read_write_notes(path):
             data = json.load(jsonfile)
             timestamp = data['userEditedTimestampUsec']
             if timestamp == 0:
-                iso_datetime = dt.now().strftime('%Y-%m-%d %H:%M:%S edited')
+                iso_datetime = dt.now().strftime('%Y%m%dT%H%M%S_edited')
             else:
-                iso_datetime = dt.fromtimestamp(timestamp/1000000).strftime('%Y-%m-%d %H:%M:%S')
+                iso_datetime = dt.fromtimestamp(timestamp/1000000).strftime('%Y%m%dT%H%M%S')
 
             if data['title'] != '':
+                title = clean_title(str(data['title']))
                 if len(title) > 100:
                     title = title[0:99]
-                title = clean_title(str(data['title']))
             else:
                 title = iso_datetime
 

@@ -1,5 +1,6 @@
 import os
 import sys
+import platform
 import glob
 import json
 from datetime import datetime as dt
@@ -9,12 +10,25 @@ import mimetypes
 
 def copy_file(file, path):
     try:
-        cp(f'{path}{file}', 'notes/resource/')
+        cp(f'{path}{file}', os.path.join('notes', 'resources'))
     except FileNotFoundError:
         print(f'File "{file}" not found in {path}')
         return False
     else:
         return True
+
+# remove illegal chars for current OS
+def clean_title(title) -> str:
+    ostype = platform.system()
+    if ostype == 'Linux':
+        title = title.replace('/', '_')
+    elif ostype == 'Darwin':
+        title = title.replace(':', ' ')
+    elif ostype == 'Windows':
+        title = title.replace('\\', '_').replace('/', '_').replace('|', '_')
+        title = title.replace('<', '-').replace('>', '-').replace(':', ' ')
+        title = title.replace('?', '').replace('"', '').replace('*', '')
+    return title
 
 def read_annotations(list) -> str:
     annotations_list = '*Weblinks:*'
@@ -45,7 +59,8 @@ def read_attachments(list, path) -> str:
                                 image = f'{image_name}{t}'
                                 print(f'Found "{image}"')
                                 copy_file(image, path)
-            attachments_list += f'![{image}](resource/{image})\n'
+            respath = os.path.join('resources','')
+            attachments_list += f'![{image}]({respath}{image})\n'
     return attachments_list
 
 def read_tasklist(list) -> str:
@@ -66,9 +81,10 @@ def read_tags(tags) -> str:
     return tag_list
 
 def read_write_notes(path):
-    notes = glob.glob(f'{path}/*.json')
+    jsonpath = os.path.join(path, '')
+    notes = glob.glob(f'{jsonpath}*.json')
     for note in notes:
-        with open(note, 'r') as jsonfile:
+        with open(note, 'r', encoding='utf-8') as jsonfile:
             data = json.load(jsonfile)
             timestamp = data['userEditedTimestampUsec']
             if timestamp == 0:
@@ -77,15 +93,16 @@ def read_write_notes(path):
                 iso_datetime = dt.fromtimestamp(timestamp/1000000).strftime('%Y-%m-%d %H:%M:%S')
 
             if data['title'] != '':
-                title = str(data['title']).replace('/', '_')
                 if len(title) > 100:
                     title = title[0:99]
+                title = clean_title(str(data['title']))
             else:
                 title = iso_datetime
 
-            if not os.path.exists(f'notes/{title}.md'):
+            notespath = os.path.join('notes', '')
+            if not os.path.exists(f'{notespath}{title}.md'):
                 print(f'Convert: {title}')
-                with open(f'notes/{title}.md', 'w') as mdfile:
+                with open(f'{notespath}{title}.md', 'w', encoding='utf-8') as mdfile:
                     mdfile.write(f'---\n')
                     mdfile.write(f'title: {title}\n')
                     if (title != iso_datetime):
@@ -126,8 +143,10 @@ def read_write_notes(path):
 
 def create_folder():
     try:
-        os.makedirs('notes/resource')
-        print('Create folder "notes" - home of markdown files.')
+        workpath = os.path.join('notes', 'resources')
+        if not os.path.exists(workpath):
+            os.makedirs(workpath)
+            print('Create folder "notes" - home of markdown files.')
     except OSError:
         print('Creation of folders failed.')
 

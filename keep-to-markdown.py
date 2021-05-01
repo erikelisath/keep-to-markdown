@@ -83,9 +83,10 @@ def read_write_notes(path):
             else:
                 title = iso_datetime
 
+            sane_title = title.replace('\\', '-').replace('/', '-').replace(':', '-').replace('*', '').replace('"', '\'').replace('|', '_')
             if not os.path.exists(f'notes/{title}.md'):
-                print(f'Convert: {title}')
-                with open(f'notes/{title}.md', 'w') as mdfile:
+                print(f'Convert: {sane_title}')
+                with open(f'notes/{sane_title}.md', 'w') as mdfile:
                     mdfile.write(f'---\n')
                     mdfile.write(f'title: {title}\n')
                     if (title != iso_datetime):

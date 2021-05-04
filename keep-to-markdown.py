@@ -94,16 +94,18 @@ def read_write_notes(path):
                 iso_datetime = dt.fromtimestamp(timestamp/1000000).strftime('%Y%m%dT%H%M%S')
 
             if data['title'] != '':
-                title = clean_title(str(data['title']))
-                if len(title) > 100:
-                    title = title[0:99]
+                title = str(data['title'])
+                filename = clean_title(title)
+                if len(filename) > 100:
+                    filename = filename[0:99]
             else:
                 title = iso_datetime
+                filename = title
 
             notespath = os.path.join('notes', '')
-            if not os.path.exists(f'{notespath}{title}.md'):
+            if not os.path.exists(f'{notespath}{filename}.md'):
                 print(f'Convert: {title}')
-                with open(f'{notespath}{title}.md', 'w', encoding='utf-8') as mdfile:
+                with open(f'{notespath}{filename}.md', 'w', encoding='utf-8') as mdfile:
                     mdfile.write(f'---\n')
                     mdfile.write(f'title: {title}\n')
                     if (title != iso_datetime):

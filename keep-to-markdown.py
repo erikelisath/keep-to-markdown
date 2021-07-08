@@ -24,6 +24,7 @@ def clean_title(title) -> str:
         title = title.replace('/', '_')
     elif ostype == 'Darwin':
         title = title.replace(':', ' ')
+        title = title.replace('\\', '_').replace('/', '_').replace('|', '_')
     elif ostype == 'Windows':
         title = title.replace('\\', '_').replace('/', '_').replace('|', '_')
         title = title.replace('<', '-').replace('>', '-').replace(':', ' ')

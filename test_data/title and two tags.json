@@ -4,7 +4,7 @@
   "isPinned": false,
   "isArchived": false,
   "textContent": "",
-  "title": "title",
-  "userEditedTimestampUsec": 1514225270192000,
+  "title": "title and two tags",
+  "userEditedTimestampUsec": 1514125270192000,
   "labels": [{ "name": "tag_01" }, { "name": "tag_02" }]
 }

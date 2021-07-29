@@ -8,9 +8,9 @@ from shutil import copy2 as cp
 import mimetypes
 
 
-def copy_file(file, path):
+def copy_file(file, path, notespath):
     try:
-        cp(f'{path}{file}', os.path.join('notes', 'resources'))
+        cp(f'{path}{file}', os.path.join(notespath, 'resources'))
     except FileNotFoundError:
         print(f'File "{file}" not found in {path}')
         return False
@@ -41,12 +41,12 @@ def read_annotations(list) -> str:
             annotations_list += f' [{title}]({url});'
     return annotations_list
 
-def read_attachments(list, path) -> str:
+def read_attachments(list, path, notespath) -> str:
     attachments_list = '*Attachments:*\n'
     for entry in list:
         if 'image' in entry['mimetype']:
             image = entry['filePath']
-            if copy_file(image, path) is False:
+            if copy_file(image, path, notespath) is False:
                 # If the file could not be found,
                 # it will be checked if the file can be found
                 # another file format.
@@ -61,7 +61,7 @@ def read_attachments(list, path) -> str:
                                 image = f'{image_name}{t}'
                                 print(f'Found "{image}"')
                                 copy_file(image, path)
-            respath = os.path.join('resources','')
+            respath = os.path.join(notespath, 'resources','')
             attachments_list += f'![{image}]({respath}{image})\n'
     return attachments_list
 
@@ -75,20 +75,25 @@ def read_tasklist(list) -> str:
             content_list += f'- [ ] {text}\n'
     return content_list
 
-def read_tags(tags) -> str:
+def format_tags(tags) -> str:
     tag_list = 'tags:'
-    for entry in tags:
-        tag = entry['name']
+    for tag in tags:
         tag_list += f' {tag};'
     return tag_list
 
-def read_write_notes(path):
+def read_write_notes(path, should_make_label_folders):
     jsonpath = os.path.join(path, '')
     notes = glob.glob(f'{jsonpath}*.json')
     for note in notes:
         with open(note, 'r', encoding='utf-8') as jsonfile:
             data = json.load(jsonfile)
             timestamp = data['userEditedTimestampUsec']
+            tags = []
+            try:
+                tags = [label["name"] for label in data['labels']]
+            except KeyError:
+                    print('No tags available.')
+
             if timestamp == 0:
                 iso_datetime = dt.now().strftime('%Y%m%dT%H%M%S_edited')
             else:
@@ -102,9 +107,16 @@ def read_write_notes(path):
             else:
                 title = iso_datetime
                 filename = title
-
-            notespath = os.path.join('notes', '')
+            if should_make_label_folders and len(tags):
+                subfolder = tags[0]
+            else:
+                subfolder = ""
+            notespath = os.path.join('notes', subfolder, '')
             if not os.path.exists(f'{notespath}{filename}.md'):
+                if not os.path.exists(notespath):
+                    os.makedirs(notespath)
+                    os.makedirs(os.path.join(notespath, 'resources'))
+                    print(f'Create tag and resources subfolder: {subfolder}')
                 print(f'Convert: {title}')
                 with open(f'{notespath}{filename}.md', 'w', encoding='utf-8') as mdfile:
                     mdfile.write(f'---\n')
@@ -112,11 +124,8 @@ def read_write_notes(path):
                     if (title != iso_datetime):
                         mdfile.write(f'date: {iso_datetime}\n')
                     # add tags
-                    try:
-                        tags = read_tags(data['labels'])
-                        mdfile.write(f'{tags}\n')
-                    except KeyError:
-                        print('No tags available.')
+                    if(tags and not should_make_label_folders):
+                        mdfile.write(f'{format_tags(tags)}\n')
                     mdfile.write(f'---\n\n')
                     # add text content
                     try:
@@ -138,7 +147,7 @@ def read_write_notes(path):
                         print('No annotations available.')
                     # add attachments
                     try:
-                        attachments = read_attachments(data['attachments'], path)
+                        attachments = read_attachments(data['attachments'], path, notespath)
                         mdfile.write(f'{attachments}')
                     except KeyError:
                         print('No attachments available.')
@@ -157,6 +166,6 @@ def create_folder():
 if __name__ == '__main__':
     create_folder()
     try:
-        read_write_notes(sys.argv[1])
+        read_write_notes(sys.argv[1], sys.argv[2] == "folders")
     except IndexError:
         print('Please enter a correct path!')

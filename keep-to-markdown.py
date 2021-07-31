@@ -60,7 +60,7 @@ def read_attachments(list, path, notespath) -> str:
                             if len(glob.glob(f'{path}{image_name}{t}')) > 0:
                                 image = f'{image_name}{t}'
                                 print(f'Found "{image}"')
-                                copy_file(image, path)
+                                copy_file(image, path, notespath)
             respath = os.path.join(notespath, 'resources','')
             attachments_list += f'![{image}]({respath}{image})\n'
     return attachments_list

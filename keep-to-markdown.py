@@ -6,6 +6,7 @@ import json
 from datetime import datetime as dt
 from shutil import copy2 as cp
 import mimetypes
+import argparse
 
 
 def copy_file(file, path, notespath):
@@ -81,16 +82,19 @@ def format_tags(tags) -> str:
         tag_list += f' {tag};'
     return tag_list
 
-def read_write_notes(path, should_make_label_folders):
+def read_write_notes(args):
+    path = args.i
+    conv_folders = args.t
     jsonpath = os.path.join(path, '')
     notes = glob.glob(f'{jsonpath}*.json')
+
     for note in notes:
         with open(note, 'r', encoding='utf-8') as jsonfile:
             data = json.load(jsonfile)
             timestamp = data['userEditedTimestampUsec']
             tags = []
             try:
-                tags = [label["name"] for label in data['labels']]
+                tags = [label['name'] for label in data['labels']]
             except KeyError:
                     print('No tags available.')
 
@@ -107,24 +111,28 @@ def read_write_notes(path, should_make_label_folders):
             else:
                 title = iso_datetime
                 filename = title
-            if should_make_label_folders and len(tags):
+
+            # ccreate folders by tags
+            if conv_folders and len(tags):
                 subfolder = tags[0]
             else:
-                subfolder = ""
+                subfolder = ''
             notespath = os.path.join('notes', subfolder, '')
+
             if not os.path.exists(f'{notespath}{filename}.md'):
                 if not os.path.exists(notespath):
                     os.makedirs(notespath)
                     os.makedirs(os.path.join(notespath, 'resources'))
                     print(f'Create tag and resources subfolder: {subfolder}')
                 print(f'Convert: {title}')
+
                 with open(f'{notespath}{filename}.md', 'w', encoding='utf-8') as mdfile:
                     mdfile.write(f'---\n')
                     mdfile.write(f'title: {title}\n')
                     if (title != iso_datetime):
                         mdfile.write(f'date: {iso_datetime}\n')
                     # add tags
-                    if(tags and not should_make_label_folders):
+                    if(tags and not conv_folders):
                         mdfile.write(f'{format_tags(tags)}\n')
                     mdfile.write(f'---\n\n')
                     # add text content
@@ -164,8 +172,13 @@ def create_folder():
         print('Creation of folders failed.')
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Converting Google Keep notes to markdown files.')
+    parser.add_argument('-i', metavar='PATH', required=True, help='path to the Takout folder')
+    parser.add_argument('-t', action='store_true', help='create and categorized folders by tags')
+    args = parser.parse_args()
+
     create_folder()
     try:
-        read_write_notes(sys.argv[1], sys.argv[2] == "folders")
+        read_write_notes(args)
     except IndexError:
         print('Please enter a correct path!')

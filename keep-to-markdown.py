@@ -61,7 +61,7 @@ def read_attachments(list, path, notespath) -> str:
                                 image = f'{image_name}{t}'
                                 print(f'Found "{image}"')
                                 copy_file(image, path, notespath)
-            respath = os.path.join(notespath, 'resources','')
+            respath = os.path.join('resources','')
             attachments_list += f'![{image}]({respath}{image})\n'
     return attachments_list
 

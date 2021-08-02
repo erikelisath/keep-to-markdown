@@ -112,7 +112,7 @@ def read_write_notes(args):
                 title = iso_datetime
                 filename = title
 
-            # ccreate folders by tags
+            # create folders by tags
             if conv_folders and len(tags):
                 subfolder = tags[0]
             else:
@@ -173,8 +173,8 @@ def create_folder():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Converting Google Keep notes to markdown files.')
-    parser.add_argument('-i', metavar='PATH', required=True, help='path to the Takout folder')
-    parser.add_argument('-t', action='store_true', help='create and categorized folders by tags')
+    parser.add_argument('-i', metavar='PATH', required=True, help='path to the Takeout folder')
+    parser.add_argument('-t', action='store_true', help='use folders instead of front-matter for tags')
     args = parser.parse_args()
 
     create_folder()

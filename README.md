@@ -64,6 +64,7 @@ A note's title will be used for its filename. If there is no title available the
 ## Future features
 
 - [x] OS compatible
+- [x] support folder tags for Nextcloud 
 - [ ] save modified Timestamp by default
 - [ ] use Google keep colors
 - [ ] usability for Joplin import

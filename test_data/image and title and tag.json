@@ -1,0 +1,11 @@
+{
+  "attachments": [{ "filePath": "image.png", "mimetype": "image/png" }],
+  "color": "DEFAULT",
+  "isTrashed": false,
+  "isPinned": false,
+  "isArchived": false,
+  "textContent": "",
+  "title": "image and title and tag",
+  "userEditedTimestampUsec": 1595998209242000,
+  "labels": [{ "name": "tag_01" }]
+}

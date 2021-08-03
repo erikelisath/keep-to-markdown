@@ -1,0 +1,10 @@
+{
+  "color": "DEFAULT",
+  "isTrashed": false,
+  "isPinned": false,
+  "isArchived": false,
+  "textContent": "Example note content",
+  "title": "",
+  "userEditedTimestampUsec": 1514221270192000,
+  "labels": [{ "name": "tag_01" }, { "name": "tag_02" }]
+}

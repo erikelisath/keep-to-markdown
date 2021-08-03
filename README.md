@@ -1,23 +1,37 @@
 # keep-to-markdown
 
-With this script Google Keep notes can be converted into markdown files. The Json files from the Google Takeout are required.
+A script to convert Google Keep notes into markdown files, for Linux, Mac, and Windows.
 
-**Why?** If you want to keep your notes from Google for archiving or importing into another note program, you can use this script.
+**Requirements**
 
-**Required?** Just Python 3.x and the Google Takeout notes as Json. This script support Linux, Mac and Windows (*new*).
+- Python 3.x
+- Google Takeout notes as Json (See [How to download your Google data](https://support.google.com/accounts/answer/3024190))
 
-**How?** To run this code use `python keep-to-markdown.py /path/to/Takeout/Keep`. By indicating the path with the Takeout/Keep folder where the Json files are located.
+**Example**
 
-**What?** All converted markdown files will save in the extra folder `notes` with sub folder `resource` for images. The following list show the extracted informations:
+```
+> python keep-to-markdown.py -i Takeout/Keep/
 
-* title
-* tags
-* text content
-* task list
-* web links
-* images
+arguments:
+  -i PATH       Relative path to the Google Keep data folder
 
+optional arguments:
+  -h, --help    Show this help message and exit
+  -t            Use subfolders for tags instead of YAML front-matter
+```
 
+The script outputs to a `notes` directory. Images will be stored in `notes/resources`.
+
+If the `-t` flag is included, the first tag (if present) of each note will be used to create a subfolder. (e.g. `notes/code_snippets` and `notes/code_snippets/resources`)
+
+Other data is extracted and written as YAML front-matter:
+
+- title
+- tags (if the `-t` flag isn't specified)
+- text content
+- task list
+- web links
+- images
 
 ## Example
 
@@ -43,12 +57,9 @@ Example Text ...
 
 <attachments>
 *Attachments:* ![image](resource/image.jpg)
-
 ```
 
-*Hint:* The title will be the file name. If there is no title available the created timestamp will be used.
-
-
+A note's title will be used for its filename. If there is no title available the created timestamp will be used.
 
 ## Future features
 

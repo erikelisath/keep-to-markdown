@@ -1,0 +1,10 @@
+{
+  "color": "DEFAULT",
+  "isTrashed": false,
+  "isPinned": false,
+  "isArchived": false,
+  "textContent": "",
+  "title": "title and tag",
+  "userEditedTimestampUsec": 1514225550192000,
+  "labels": [{ "name": "tag_01" }]
+}

@@ -103,6 +103,7 @@ def read_write_notes(args):
             else:
                 iso_datetime = dt.fromtimestamp(timestamp/1000000).strftime('%Y%m%dT%H%M%S')
 
+            # get filename by title
             if data['title'] != '':
                 title = str(data['title'])
                 filename = clean_title(title)
@@ -119,48 +120,59 @@ def read_write_notes(args):
                 subfolder = ''
             notespath = os.path.join('notes', subfolder, '')
 
-            if not os.path.exists(f'{notespath}{filename}.md'):
-                if not os.path.exists(notespath):
-                    os.makedirs(notespath)
-                    os.makedirs(os.path.join(notespath, 'resources'))
-                    print(f'Create tag and resources subfolder: {subfolder}')
-                print(f'Convert: {title}')
+            # check if filename exists
+            if os.path.exists(f'{notespath}{filename}.md'):
+                print(f'Existing file found: {notespath}{filename}.md')
+                # increment duplicate number, if already exists
+                dup_num = 1
+                while(os.path.exists(f'{notespath}{filename}({dup_num}).md')):
+                    print(f'File "{notespath}{filename}({dup_num}).md" exists, increment number...')
+                    dup_num = dup_num+1
 
-                with open(f'{notespath}{filename}.md', 'w', encoding='utf-8') as mdfile:
-                    mdfile.write(f'---\n')
-                    mdfile.write(f'title: {title}\n')
-                    if (title != iso_datetime):
-                        mdfile.write(f'date: {iso_datetime}\n')
-                    # add tags
-                    if(tags and not conv_folders):
-                        mdfile.write(f'{format_tags(tags)}\n')
-                    mdfile.write(f'---\n\n')
-                    # add text content
-                    try:
-                        textContent = data['textContent']
-                        mdfile.write(f'{textContent}\n\n')
-                    except KeyError:
-                        print('No text content available.')
-                    # add tasklist
-                    try:
-                        tasklist = read_tasklist(data['listContent'])
-                        mdfile.write(f'{tasklist}\n\n')
-                    except KeyError:
-                        print('No tasklist available.')
-                    # add annotations
-                    try:
-                        annotations = read_annotations(data['annotations'])
-                        mdfile.write(f'{annotations}')
-                    except KeyError:
-                        print('No annotations available.')
-                    # add attachments
-                    try:
-                        attachments = read_attachments(data['attachments'], path, notespath)
-                        mdfile.write(f'{attachments}')
-                    except KeyError:
-                        print('No attachments available.')
-            else:
-                print(f'File "{title}" exists!')
+                filename = f'{filename}({dup_num})'
+                print(f'New filename: {filename}.md')
+
+            # create path to notes
+            if not os.path.exists(notespath):
+                os.makedirs(notespath)
+                os.makedirs(os.path.join(notespath, 'resources'))
+                print(f'Create tag and resources subfolder: {subfolder}')
+
+            # create Markdown file
+            print(f'Convert "{title}" to markdown file.')
+            with open(f'{notespath}{filename}.md', 'w', encoding='utf-8') as mdfile:
+                mdfile.write(f'---\n')
+                mdfile.write(f'title: {title}\n')
+                if (title != iso_datetime):
+                    mdfile.write(f'date: {iso_datetime}\n')
+                # add tags
+                if(tags and not conv_folders):
+                    mdfile.write(f'{format_tags(tags)}\n')
+                mdfile.write(f'---\n\n')
+                # add text content
+                try:
+                    textContent = data['textContent']
+                    mdfile.write(f'{textContent}\n\n')
+                except KeyError:
+                    print('No text content available.')
+                # add tasklist
+                try:
+                    tasklist = read_tasklist(data['listContent'])
+                    mdfile.write(f'{tasklist}\n\n')
+                except KeyError:
+                    print('No tasklist available.')
+                # add annotations
+                try:
+                    annotations = read_annotations(data['annotations'])
+                    mdfile.write(f'{annotations}')
+                except KeyError:
+                    print('No annotations available.')
+                # add attachments
+                try:
+                    attachments = read_attachments(data['attachments'], path, notespath)
+                    mdfile.write(f'{attachments}')
+                except KeyError:
+                    print('No attachments available.')
 
 def create_folder():
     try:
@@ -173,8 +185,8 @@ def create_folder():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Converting Google Keep notes to markdown files.')
-    parser.add_argument('-i', metavar='PATH', required=True, help='path to the Takeout folder')
-    parser.add_argument('-t', action='store_true', help='use folders instead of front-matter for tags')
+    parser.add_argument('-i', metavar='PATH', required=True, help='The path to the Takeout folder.')
+    parser.add_argument('-t', action='store_true', help='Use folders instead of front-matter for tags.')
     args = parser.parse_args()
 
     create_folder()

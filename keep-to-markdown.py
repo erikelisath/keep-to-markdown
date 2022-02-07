@@ -87,6 +87,9 @@ def format_tags(tags) -> str:
 
 def read_write_notes(args):
     path = args.i
+    if path[-1]!='/' and path[-1]!='\\':  # path should end on a slash
+        path+='/'
+
     conv_folders = args.t
     linktype = args.linktype
     jsonpath = os.path.join(path, '')

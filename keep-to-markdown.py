@@ -117,6 +117,7 @@ def read_write_notes(args):
     path = args.i
     conv_folders = args.t
     build_hashtags = args.x
+    UseFirstAnnotationsTitle = args.a
     jsonpath = os.path.join(path, '')
     notes = glob.glob(f'{jsonpath}*.json')
 
@@ -138,6 +139,11 @@ def read_write_notes(args):
             # get filename by title
             if data['title'] != '':
                 title = str(data['title'])
+                filename = clean_title(title)
+                if len(filename) > 100:
+                    filename = filename[0:99]
+            elif UseFirstAnnotationsTitle and 'annotations' in data and data['annotations'] and 'title' in data['annotations'][0] and data['annotations'][0]['title'] != '':
+                title = str(data['annotations'][0]['title'])
                 filename = clean_title(title)
                 if len(filename) > 100:
                     filename = filename[0:99]
@@ -220,6 +226,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', metavar='PATH', required=True, help='The path to the Takeout folder.')
     parser.add_argument('-t', action='store_true', help='Use folders instead of front-matter for tags.')
     parser.add_argument('-x', action='store_true', help='Build hashtags from tags.')
+    parser.add_argument('-a', action='store_true', help='If no title is available in basic data, use title of the first annotations.')
     args = parser.parse_args()
 
     create_folder()

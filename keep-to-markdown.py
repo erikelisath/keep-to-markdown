@@ -11,7 +11,9 @@ import argparse
 
 def copy_file(file, path, notespath):
     try:
-        cp(f'{path}{file}', os.path.join(notespath, 'resources'))
+        # use os.path.join to correctly build the source path
+        source_path = os.path.join(path, file)
+        cp(source_path, os.path.join(notespath, 'resources'))
     except FileNotFoundError:
         print(f'File "{file}" not found in {path}')
         return False
@@ -52,13 +54,15 @@ def read_attachments(list, path, notespath) -> str:
                 # it will be checked if the file can be found
                 # another file format.
                 # Google used '.jpeg' instead of '.jpg'
-                image_type = mimetypes.guess_type(f'{path}{image}')
+                # fixed path creation
+                image_type = mimetypes.guess_type(os.path.join(path, image))
                 types = mimetypes.guess_all_extensions(image_type[0])
                 for type in types:
                     if type in image:
                         image_name = image.replace(type, '')
                         for t in types:
-                            if len(glob.glob(f'{path}{image_name}{t}')) > 0:
+                            # fixed path creation
+                            if len(glob.glob(os.path.join(path, f'{image_name}{t}'))) > 0:
                                 image = f'{image_name}{t}'
                                 print(f'Found "{image}"')
                                 copy_file(image, path, notespath)

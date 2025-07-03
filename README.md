@@ -18,6 +18,8 @@ arguments:
 optional arguments:
   -h, --help    Show this help message and exit
   -t            Use subfolders for tags instead of YAML front-matter
+  -x            Generate hashtags instead of semicolon-separated tags
+  -a            Use the first annotation, if no tittle is aviable
 ```
 
 The script outputs to a `notes` directory. Images will be stored in `notes/resources`.

@@ -7,7 +7,34 @@ from datetime import datetime as dt
 from shutil import copy2 as cp
 import mimetypes
 import argparse
+import re
 
+def sanitize_hashtag(text: str) -> str:
+    """
+    Receives a string and returns a valid hashtag string,
+    replacing umlauts and replacing invalid characters with underscores.
+    """
+    # Mapping German umlautes and ß
+    umlaut_map = {
+        'ä': 'ae', 'ö': 'oe', 'ü': 'ue',
+        'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue',
+        'ß': 'ss'
+    }
+
+    # Replace umlautes and ß
+    for char, replacement in umlaut_map.items():
+        text = text.replace(char, replacement)
+
+    # Replace all invalid characters with "_"
+    sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', text)
+
+    # Replace multiple underscores with a single one
+    sanitized = re.sub(r'_+', '_', sanitized)
+
+    # Remove leading and trailing underscores
+    sanitized = sanitized.strip('_')
+
+    return sanitized
 
 def copy_file(file, path, notespath):
     try:
@@ -80,15 +107,21 @@ def read_tasklist(list) -> str:
             content_list += f'- [ ] {text}\n'
     return content_list
 
-def format_tags(tags) -> str:
+def format_tags(tags, build_hashtags) -> str:
     tag_list = 'tags:'
     for tag in tags:
-        tag_list += f' {tag};'
+        if build_hashtags:
+            myTag = sanitize_hashtag(tag).lower()
+            tag_list += f' #{myTag}'
+        else:
+            tag_list += f' {tag};'
     return tag_list
 
 def read_write_notes(args):
     path = args.i
     conv_folders = args.t
+    build_hashtags = args.x
+    UseFirstAnnotationsTitle = args.a
     jsonpath = os.path.join(path, '')
     notes = glob.glob(f'{jsonpath}*.json')
 
@@ -110,6 +143,11 @@ def read_write_notes(args):
             # get filename by title
             if data['title'] != '':
                 title = str(data['title'])
+                filename = clean_title(title)
+                if len(filename) > 100:
+                    filename = filename[0:99]
+            elif UseFirstAnnotationsTitle and 'annotations' in data and data['annotations'] and 'title' in data['annotations'][0] and data['annotations'][0]['title'] != '':
+                title = str(data['annotations'][0]['title'])
                 filename = clean_title(title)
                 if len(filename) > 100:
                     filename = filename[0:99]
@@ -151,7 +189,7 @@ def read_write_notes(args):
                     mdfile.write(f'date: {iso_datetime}\n')
                 # add tags
                 if(tags and not conv_folders):
-                    mdfile.write(f'{format_tags(tags)}\n')
+                    mdfile.write(f'{format_tags(tags, build_hashtags)}\n')
                 mdfile.write(f'---\n\n')
                 # add text content
                 try:
@@ -191,6 +229,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Converting Google Keep notes to markdown files.')
     parser.add_argument('-i', metavar='PATH', required=True, help='The path to the Takeout folder.')
     parser.add_argument('-t', action='store_true', help='Use folders instead of front-matter for tags.')
+    parser.add_argument('-x', action='store_true', help='Build hashtags from tags.')
+    parser.add_argument('-a', action='store_true', help='If no title is available in basic data, use title of the first annotations.')
     args = parser.parse_args()
 
     create_folder()

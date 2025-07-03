@@ -44,7 +44,7 @@ def read_annotations(list) -> str:
             annotations_list += f' [{title}]({url});'
     return annotations_list
 
-def read_attachments(list, path, notespath) -> str:
+def read_attachments(list, path, notespath, linktype) -> str:
     attachments_list = '*Attachments:*\n'
     for entry in list:
         if 'image' in entry['mimetype']:
@@ -67,7 +67,10 @@ def read_attachments(list, path, notespath) -> str:
                                 print(f'Found "{image}"')
                                 copy_file(image, path, notespath)
             respath = os.path.join('resources','')
-            attachments_list += f'![{image}]({respath}{image})\n'
+            if linktype == 'm':
+                attachments_list += f'![{image}]({respath}{image})\n'
+            if linktype == 'w':
+                attachments_list += f'![[{image}]]\n' # for Obsidian
     return attachments_list
 
 def read_tasklist(list) -> str:
@@ -88,7 +91,11 @@ def format_tags(tags) -> str:
 
 def read_write_notes(args):
     path = args.i
+    if path[-1]!='/' and path[-1]!='\\':  # path should end on a slash
+        path+='/'
+
     conv_folders = args.t
+    linktype = args.linktype
     jsonpath = os.path.join(path, '')
     notes = glob.glob(f'{jsonpath}*.json')
 
@@ -173,7 +180,7 @@ def read_write_notes(args):
                     print('No annotations available.')
                 # add attachments
                 try:
-                    attachments = read_attachments(data['attachments'], path, notespath)
+                    attachments = read_attachments(data['attachments'], path, notespath, linktype)
                     mdfile.write(f'{attachments}')
                 except KeyError:
                     print('No attachments available.')
@@ -191,6 +198,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Converting Google Keep notes to markdown files.')
     parser.add_argument('-i', metavar='PATH', required=True, help='The path to the Takeout folder.')
     parser.add_argument('-t', action='store_true', help='Use folders instead of front-matter for tags.')
+    parser.add_argument('-l', '--linktype', choices=['m', 'w'], nargs='?', const='m', help='Image link type: m=Markdown, w=Wikistyle')
     args = parser.parse_args()
 
     create_folder()
